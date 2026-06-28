@@ -7,8 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    .fab-btn { transition: transform 0.2s; }
-    .fab-btn:active { transform: scale(0.9); }
+    /* Força o display do container mobile */
+    .modal-active { display: flex !important; }
   </style>
 </head>
 <body class="bg-gray-950 text-gray-200 font-sans min-h-screen p-4 md:p-6 lg:p-10">
@@ -34,11 +34,11 @@
     
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       
-      <div id="form-container" class="hidden lg:block lg:col-span-1 fixed inset-0 z-50 bg-gray-950/95 p-4 lg:p-0 lg:static lg:bg-transparent lg:z-0 items-center justify-center">
+      <div id="form-container" class="hidden lg:flex lg:col-span-1 fixed inset-0 z-50 bg-gray-950/95 p-4 lg:p-0 lg:static lg:bg-transparent items-center justify-center">
         <form id="transaction-form" class="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-2xl space-y-4 w-full max-w-sm mx-auto">
           <div class="flex justify-between items-center lg:hidden">
             <h3 class="text-sm font-semibold text-white">Novo Lançamento</h3>
-            <button type="button" onclick="toggleMobileForm()" class="text-gray-500"><i data-lucide="x"></i></button>
+            <button type="button" onclick="closeForm()" class="text-gray-500 hover:text-white"><i data-lucide="x"></i></button>
           </div>
           <input type="date" id="date" required class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 outline-none">
           <select id="account" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 text-sm outline-none">
@@ -77,18 +77,15 @@
     </div>
   </div>
 
-  <button onclick="toggleMobileForm()" class="lg:hidden fixed bottom-6 right-6 bg-indigo-600 p-4 rounded-full shadow-2xl text-white fab-btn z-40">
+  <button onclick="openForm()" class="lg:hidden fixed bottom-6 right-6 bg-indigo-600 p-4 rounded-full shadow-2xl text-white z-40">
     <i data-lucide="plus"></i>
   </button>
   
   <script>
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-    const toggleMobileForm = () => {
-      const container = document.getElementById('form-container');
-      container.classList.toggle('hidden');
-      container.classList.toggle('flex');
-    };
+    const openForm = () => document.getElementById('form-container').classList.add('modal-active');
+    const closeForm = () => document.getElementById('form-container').classList.remove('modal-active');
 
     const updateUI = () => {
       const monthFilter = document.getElementById('month-filter').value || new Date().toISOString().slice(0, 7);
@@ -114,13 +111,7 @@
       lucide.createIcons();
     };
 
-    const deleteTransaction = (index) => { 
-      if(confirm('Excluir este lançamento?')) { 
-        transactions.splice(index, 1); 
-        localStorage.setItem('transactions', JSON.stringify(transactions)); 
-        updateUI(); 
-      } 
-    };
+    const deleteTransaction = (index) => { if(confirm('Excluir?')) { transactions.splice(index, 1); localStorage.setItem('transactions', JSON.stringify(transactions)); updateUI(); } };
 
     document.getElementById('transaction-form').addEventListener('submit', (e) => { 
       e.preventDefault(); 
@@ -134,7 +125,7 @@
       localStorage.setItem('transactions', JSON.stringify(transactions)); 
       e.target.reset(); 
       updateUI();
-      if(window.innerWidth < 1024) toggleMobileForm();
+      if(window.innerWidth < 1024) closeForm();
     });
 
     document.getElementById('month-filter').value = new Date().toISOString().slice(0, 7);
