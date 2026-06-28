@@ -7,17 +7,19 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* Estilo para garantir que o botão flutuante seja visível apenas em telas pequenas */
-    @media (min-width: 1024px) { .fab-btn { display: none; } }
+    /* Estilização do botão flutuante */
+    .fab-btn { transition: transform 0.2s; }
+    .fab-btn:active { transform: scale(0.9); }
   </style>
 </head>
 <body class="bg-gray-950 text-gray-200 font-sans min-h-screen p-4 md:p-6 lg:p-10">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-5xl mx-auto">
     
+    <!-- Cabeçalho -->
     <header class="mb-8 flex flex-col items-center justify-center gap-6 border-b border-gray-800 pb-6 text-center">
       <div>
         <h1 class="text-3xl font-bold text-white">Finanças<span class="text-indigo-500">Hub</span></h1>
-        <p class="text-xs md:text-sm text-gray-500">Controle financeiro pessoal</p>
+        <p class="text-xs md:text-sm text-gray-500">Controle financeiro pessoal e histórico</p>
       </div>
       
       <div class="flex flex-col sm:flex-row items-center gap-6 border-t border-gray-800 pt-6 w-full justify-center">
@@ -33,37 +35,43 @@
     </header>
     
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <div id="form-container" class="hidden lg:block lg:col-span-1">
-        <form id="transaction-form" class="bg-gray-900 border border-gray-800 p-5 rounded-2xl shadow-xl space-y-4">
-          <h3 class="text-sm font-semibold text-white">Novo Lançamento</h3>
-          <input type="date" id="date" required class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500">
-          <select id="account" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm outline-none">
+      
+      <!-- Container do Formulário (Oculto em Mobile por padrão) -->
+      <div id="form-container" class="hidden lg:block lg:col-span-1 fixed inset-0 z-50 bg-gray-950/90 p-4 lg:p-0 lg:static lg:bg-transparent lg:z-0 items-center justify-center">
+        <form id="transaction-form" class="bg-gray-900 border border-gray-800 p-6 rounded-2xl shadow-2xl space-y-4 w-full max-w-sm mx-auto">
+          <div class="flex justify-between items-center lg:hidden">
+            <h3 class="text-sm font-semibold text-white">Novo Lançamento</h3>
+            <button type="button" onclick="toggleMobileForm()" class="text-gray-500"><i data-lucide="x"></i></button>
+          </div>
+          <input type="date" id="date" required class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 text-sm focus:border-indigo-500 outline-none">
+          <select id="account" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 text-sm outline-none">
             <option value="bank">Conta Bancária</option>
             <option value="credit">Cartão de Crédito</option>
             <option value="investment">Investimento</option>
             <option value="cash">Dinheiro</option>
           </select>
-          <input type="text" id="desc" required placeholder="Descrição" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm outline-none">
-          <input type="number" step="0.01" id="amount" required placeholder="Valor R$" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm outline-none">
+          <input type="text" id="desc" required placeholder="Descrição" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 text-sm outline-none">
+          <input type="number" step="0.01" id="amount" required placeholder="Valor R$" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2.5 text-sm outline-none">
           
           <div class="grid grid-cols-2 gap-2">
             <label class="flex justify-center items-center border border-gray-800 rounded-lg p-2 cursor-pointer text-[11px] hover:bg-gray-800"><input type="radio" name="type" value="income" checked class="mr-1"> Entrada</label>
             <label class="flex justify-center items-center border border-gray-800 rounded-lg p-2 cursor-pointer text-[11px] hover:bg-gray-800"><input type="radio" name="type" value="expense" class="mr-1"> Saída</label>
           </div>
-          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 py-2 rounded-lg text-sm font-bold transition">Registrar</button>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 py-2.5 rounded-lg text-sm font-bold transition">Registrar</button>
         </form>
       </div>
       
+      <!-- Tabela de Histórico -->
       <div class="lg:col-span-3">
-        <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-xl overflow-x-auto">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl shadow-lg overflow-x-auto">
           <table class="w-full text-xs sm:text-sm">
             <thead class="bg-gray-950/50 border-b border-gray-800">
               <tr class="text-left text-gray-500">
-                <th class="p-3">Data</th>
-                <th class="p-3">Descrição</th>
-                <th class="p-3 hidden sm:table-cell">Conta</th>
-                <th class="p-3 text-right">Valor</th>
-                <th class="p-3 text-center">Ação</th>
+                <th class="p-4">Data</th>
+                <th class="p-4">Descrição</th>
+                <th class="p-4 hidden sm:table-cell">Conta</th>
+                <th class="p-4 text-right">Valor</th>
+                <th class="p-4 text-center">Ação</th>
               </tr>
             </thead>
             <tbody id="transaction-history" class="divide-y divide-gray-800"></tbody>
@@ -73,7 +81,8 @@
     </div>
   </div>
 
-  <button onclick="toggleMobileForm()" class="fab-btn fixed bottom-6 right-6 bg-indigo-600 p-4 rounded-full shadow-2xl text-white">
+  <!-- Botão Flutuante (Mobile) -->
+  <button onclick="toggleMobileForm()" class="lg:hidden fixed bottom-6 right-6 bg-indigo-600 p-4 rounded-full shadow-2xl text-white fab-btn z-40">
     <i data-lucide="plus"></i>
   </button>
   
@@ -83,27 +92,23 @@
     const toggleMobileForm = () => {
       const container = document.getElementById('form-container');
       container.classList.toggle('hidden');
-      container.classList.toggle('fixed');
-      container.classList.toggle('inset-0');
-      container.classList.toggle('z-50');
-      container.classList.toggle('bg-gray-950/90');
-      container.classList.toggle('p-4');
+      container.classList.toggle('flex');
     };
 
     const updateUI = () => {
       const monthFilter = document.getElementById('month-filter').value || new Date().toISOString().slice(0, 7);
-      const filtered = transactions.filter(t => t.date.startsWith(monthFilter));
+      const filtered = transactions.filter(t => t.date.startsWith(monthFilter)).sort((a, b) => new Date(b.date) - new Date(a.date));
       const history = document.getElementById('transaction-history');
       
       history.innerHTML = filtered.map((t, index) => `
         <tr class="hover:bg-gray-800/30">
-          <td class="p-3 text-gray-400">${t.date.split('-').reverse().join('/')}</td>
-          <td class="p-3 text-white font-medium">${t.description}</td>
-          <td class="p-3 text-gray-400 hidden sm:table-cell capitalize">${t.account}</td>
-          <td class="p-3 text-right font-bold ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}">
+          <td class="p-4 text-gray-400">${t.date.split('-').reverse().join('/')}</td>
+          <td class="p-4 text-white font-medium">${t.description}</td>
+          <td class="p-4 text-gray-400 hidden sm:table-cell capitalize">${t.account}</td>
+          <td class="p-4 text-right font-bold ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}">
             ${t.type === 'income' ? '+' : '-'} R$ ${parseFloat(t.amount).toFixed(2)}
           </td>
-          <td class="p-3 text-center">
+          <td class="p-4 text-center">
             <button onclick="deleteTransaction(${transactions.indexOf(t)})" class="text-gray-600 hover:text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
           </td>
         </tr>
@@ -114,7 +119,13 @@
       lucide.createIcons();
     };
 
-    const deleteTransaction = (index) => { if(confirm('Excluir este lançamento?')) { transactions.splice(index, 1); localStorage.setItem('transactions', JSON.stringify(transactions)); updateUI(); } };
+    const deleteTransaction = (index) => { 
+      if(confirm('Excluir este lançamento?')) { 
+        transactions.splice(index, 1); 
+        localStorage.setItem('transactions', JSON.stringify(transactions)); 
+        updateUI(); 
+      } 
+    };
 
     document.getElementById('transaction-form').addEventListener('submit', (e) => { 
       e.preventDefault(); 
